@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const z = require('zod');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,14 @@ app.get('/', async (req, res) => {
   }
 
   const ensuredUrl = ensureValidUrl(url);
+
+  const { success } = z.url({
+    hostname: z.regexes.domain
+  }).safeParse(ensuredUrl);
+
+  if (!success) {
+    return res.status(400).json({ error: 'Invalid URL format' });
+  }
 
   try {
     // 发起HTTP请求获取目标网页内容
